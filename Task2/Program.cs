@@ -80,10 +80,12 @@ internal class Program
 	private static Cell GetPlayerKey()
 	{
 		Console.WriteLine(Game.CurrentPlayer == Player.Player1 ? "\nХод игрока 1:" : "\nХод игрока 2:");
+
 		while (true)
 		{
 			var key = Console.ReadKey().Key;
 			var cell = KeyToCell(key);
+
 			if (cell == Cell.Wrong)
 			{
 				Console.WriteLine("\nНужно вводить число от 1 до 9. Введите корректный номер клетки:");

@@ -4,32 +4,7 @@ namespace Task2.Algorithms;
 
 internal class TicTacToe
 {
-	private Player _firstMove = Player.Player1;
-
-	private readonly Dictionary<Player, char> _playersSymbols = new()
-	{
-		{ Player.Player1, 'X' },
-		{ Player.Player2_Or_AI, 'O' }
-	};
-
-	private readonly Dictionary<Player, int> _playersWinsCount = new()
-	{
-		{ Player.Player1, 0 },
-		{ Player.Player2_Or_AI, 0 }
-	};
-
-	public TicTacToe()
-	{
-
-	}
-
-	public TicTacToe(Player firstMove, char firstPlayerSymbol, char secondPlayerSymbol)
-	{
-		_firstMove = firstMove;
-		FirstPlayerSymbol = firstPlayerSymbol;
-		SecondPlayerSymbol = secondPlayerSymbol;
-		Start();
-	}
+	#region [ Поля и свойства ]
 
 	public Dictionary<Cell, char> Board { get; } = new()
 	{
@@ -44,7 +19,15 @@ internal class TicTacToe
 		{ Cell.RightBottom, '9' }
 	};
 
+	private Player _firstMove = Player.Player1;
+
 	public Player CurrentPlayer { get; private set; }
+
+	private readonly Dictionary<Player, char> _playersSymbols = new()
+	{
+		{ Player.Player1, 'X' },
+		{ Player.Player2_Or_AI, 'O' }
+	};
 
 	public char FirstPlayerSymbol
 	{
@@ -58,9 +41,21 @@ internal class TicTacToe
 		set => _playersSymbols[Player.Player2_Or_AI] = value;
 	}
 
+	private readonly Dictionary<Player, int> _playersWinsCount = new()
+	{
+		{ Player.Player1, 0 },
+		{ Player.Player2_Or_AI, 0 }
+	};
+
 	public int FirstPlayerWinsCount => _playersWinsCount[Player.Player1];
+
 	public int SecondPlayerWinsCount => _playersWinsCount[Player.Player2_Or_AI];
+
 	public int DrawsCount { get; private set; }
+
+	#endregion
+
+	#region [ Методы ]
 
 	//перезапуск игры
 	public void Start()
@@ -106,13 +101,13 @@ internal class TicTacToe
 	public MoveResult MakeMove(in Cell position)
 	{
 		Board[position] = _playersSymbols[CurrentPlayer];
-		if (CheckForWin())
+		if (IsWin())
 		{
 			_playersWinsCount[CurrentPlayer]++;
 			return MoveResult.Win;
 		}
 
-		if (!IsMovesLeft())
+		if (!IsDraw())
 		{
 			DrawsCount++;
 			return MoveResult.Draw;
@@ -122,6 +117,37 @@ internal class TicTacToe
 		return MoveResult.Success;
 	}
 
+	#region [ Проверки состония игры ]
+
+	//проверка на ничью
+	private bool IsDraw()
+	{
+		return Board.Any(cell =>
+			cell.Value != _playersSymbols[Player.Player1] && cell.Value != _playersSymbols[Player.Player2_Or_AI]);
+	}
+
+	//проверка на победу
+	private bool IsWin()
+	{
+		return (Board[Cell.LeftTop] == Board[Cell.CenterTop] &&
+		        Board[Cell.CenterTop] == Board[Cell.RightTop]) ||
+		       (Board[Cell.LeftCenter] == Board[Cell.Center] &&
+		        Board[Cell.Center] == Board[Cell.RightCenter]) ||
+		       (Board[Cell.LeftBottom] == Board[Cell.CenterBottom] &&
+		        Board[Cell.CenterBottom] == Board[Cell.RightBottom]) ||
+		       (Board[Cell.LeftTop] == Board[Cell.LeftCenter] &&
+		        Board[Cell.LeftCenter] == Board[Cell.LeftBottom]) ||
+		       (Board[Cell.CenterTop] == Board[Cell.Center] &&
+		        Board[Cell.Center] == Board[Cell.CenterBottom]) ||
+		       (Board[Cell.RightTop] == Board[Cell.RightCenter] &&
+		        Board[Cell.RightCenter] == Board[Cell.RightBottom]) ||
+		       (Board[Cell.LeftTop] == Board[Cell.Center] && Board[Cell.Center] == Board[Cell.RightBottom]) ||
+		       (Board[Cell.RightTop] == Board[Cell.Center] && Board[Cell.Center] == Board[Cell.LeftBottom]);
+	}
+
+	#endregion
+
+	#region [ Логика робота ]
 
 	//ход бота
 	public MoveResult ComputerMove()
@@ -158,7 +184,7 @@ internal class TicTacToe
 				return score + depth;
 		}
 
-		if (!IsMovesLeft()) return 0;
+		if (!IsDraw()) return 0;
 
 		if (isMax)
 		{
@@ -271,29 +297,25 @@ internal class TicTacToe
 		return 0;
 	}
 
-	//проверка на ничью
-	private bool IsMovesLeft()
+	#endregion
+
+	#endregion
+
+	#region [ Конструкторы ]
+
+	public TicTacToe()
 	{
-		return Board.Any(cell =>
-			cell.Value != _playersSymbols[Player.Player1] && cell.Value != _playersSymbols[Player.Player2_Or_AI]);
+
 	}
 
-	//проверка на победу
-	private bool CheckForWin()
+	public TicTacToe(Player firstMove, char firstPlayerSymbol, char secondPlayerSymbol)
 	{
-		return (Board[Cell.LeftTop] == Board[Cell.CenterTop] &&
-		        Board[Cell.CenterTop] == Board[Cell.RightTop]) ||
-		       (Board[Cell.LeftCenter] == Board[Cell.Center] &&
-		        Board[Cell.Center] == Board[Cell.RightCenter]) ||
-		       (Board[Cell.LeftBottom] == Board[Cell.CenterBottom] &&
-		        Board[Cell.CenterBottom] == Board[Cell.RightBottom]) ||
-		       (Board[Cell.LeftTop] == Board[Cell.LeftCenter] &&
-		        Board[Cell.LeftCenter] == Board[Cell.LeftBottom]) ||
-		       (Board[Cell.CenterTop] == Board[Cell.Center] &&
-		        Board[Cell.Center] == Board[Cell.CenterBottom]) ||
-		       (Board[Cell.RightTop] == Board[Cell.RightCenter] &&
-		        Board[Cell.RightCenter] == Board[Cell.RightBottom]) ||
-		       (Board[Cell.LeftTop] == Board[Cell.Center] && Board[Cell.Center] == Board[Cell.RightBottom]) ||
-		       (Board[Cell.RightTop] == Board[Cell.Center] && Board[Cell.Center] == Board[Cell.LeftBottom]);
+		_firstMove = firstMove;
+		FirstPlayerSymbol = firstPlayerSymbol;
+		SecondPlayerSymbol = secondPlayerSymbol;
+
+		Start();
 	}
+
+	#endregion
 }
