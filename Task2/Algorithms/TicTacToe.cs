@@ -4,32 +4,47 @@ namespace Task2.Algorithms;
 
 internal class TicTacToe
 {
-	private Dictionary<Cell, char> _board = [];
-	private int _move;
 	private Player _firstMove = Player.Player1;
-	private Player _currentPlayer;
-	private bool _isStarted;
 
 	private readonly Dictionary<Player, char> _playersSymbols = new()
 	{
 		{ Player.Player1, 'X' },
-		{ Player.Player2, 'O' }
+		{ Player.Player2_Or_AI, 'O' }
 	};
-	private readonly Dictionary<Player, int> _playersWins = new()
+
+	private readonly Dictionary<Player, int> _playersWinsCount = new()
 	{
 		{ Player.Player1, 0 },
-		{ Player.Player2, 0 }
+		{ Player.Player2_Or_AI, 0 }
 	};
+
 	public TicTacToe()
 	{
 
 	}
 
-	public TicTacToe( char firstPlayerSymbol, char secondPlayerSymbol)
+	public TicTacToe(Player firstMove, char firstPlayerSymbol, char secondPlayerSymbol)
 	{
+		_firstMove = firstMove;
 		FirstPlayerSymbol = firstPlayerSymbol;
 		SecondPlayerSymbol = secondPlayerSymbol;
+		Start();
 	}
+
+	public Dictionary<Cell, char> Board { get; } = new()
+	{
+		{ Cell.LeftTop, '1' },
+		{ Cell.CenterTop, '2' },
+		{ Cell.RightTop, '3' },
+		{ Cell.LeftCenter, '4' },
+		{ Cell.Center, '5' },
+		{ Cell.RightCenter, '6' },
+		{ Cell.LeftBottom, '7' },
+		{ Cell.CenterBottom, '8' },
+		{ Cell.RightBottom, '9' }
+	};
+
+	public Player CurrentPlayer { get; private set; }
 
 	public char FirstPlayerSymbol
 	{
@@ -39,151 +54,98 @@ internal class TicTacToe
 
 	public char SecondPlayerSymbol
 	{
-		get => _playersSymbols[Player.Player2];
-		set => _playersSymbols[Player.Player2] = value;
+		get => _playersSymbols[Player.Player2_Or_AI];
+		set => _playersSymbols[Player.Player2_Or_AI] = value;
 	}
 
-	public int FirstPlayerWinsCount => _playersWins[Player.Player1];
-	public int SecondPlayerWinsCount => _playersWins[Player.Player2];
+	public int FirstPlayerWinsCount => _playersWinsCount[Player.Player1];
+	public int SecondPlayerWinsCount => _playersWinsCount[Player.Player2_Or_AI];
 	public int DrawsCount { get; private set; }
-	public string Start()
+
+	//перезапуск игры
+	public void Start()
 	{
-		_playersWins[Player.Player1] = 0;
-		_playersWins[Player.Player2] = 0;
+		_playersWinsCount[Player.Player1] = 0;
+		_playersWinsCount[Player.Player2_Or_AI] = 0;
 		DrawsCount = 0;
-		_board = new Dictionary<Cell, char>
-		{
-			{ Cell.LeftTop, '1' },
-			{ Cell.CenterTop, '2' },
-			{ Cell.RightTop, '3' },
-			{ Cell.LeftCenter, '4' },
-			{ Cell.Center, '5' },
-			{ Cell.RightCenter, '6' },
-			{ Cell.LeftBottom, '7' },
-			{ Cell.CenterBottom, '8' },
-			{ Cell.RightBottom, '9' }
-		};
-		_move = 0;
-		_currentPlayer = _firstMove;
-		_isStarted = true;
-		return DrawBoard() + "\nХод игрока 1:";
+		Board[Cell.LeftTop] = '1';
+		Board[Cell.CenterTop] = '2';
+		Board[Cell.RightTop] = '3';
+		Board[Cell.LeftCenter] = '4';
+		Board[Cell.Center] = '5';
+		Board[Cell.RightCenter] = '6';
+		Board[Cell.LeftBottom] = '7';
+		Board[Cell.CenterBottom] = '8';
+		Board[Cell.RightBottom] = '9';
+		CurrentPlayer = _firstMove;
 	}
 
-	private void NextIteration()
+	//следующая итерация игры
+	public void NextIteration()
 	{
-		_board = new Dictionary<Cell, char>
-		{
-			{ Cell.LeftTop, '1' },
-			{ Cell.CenterTop, '2' },
-			{ Cell.RightTop, '3' },
-			{ Cell.LeftCenter, '4' },
-			{ Cell.Center, '5' },
-			{ Cell.RightCenter, '6' },
-			{ Cell.LeftBottom, '7' },
-			{ Cell.CenterBottom, '8' },
-			{ Cell.RightBottom, '9' }
-		};
-		_firstMove = _firstMove == Player.Player1 ? Player.Player2 : Player.Player1;
-		_currentPlayer = _firstMove;
-		_move = 0;
+		Board[Cell.LeftTop] = '1';
+		Board[Cell.CenterTop] = '2';
+		Board[Cell.RightTop] = '3';
+		Board[Cell.LeftCenter] = '4';
+		Board[Cell.Center] = '5';
+		Board[Cell.RightCenter] = '6';
+		Board[Cell.LeftBottom] = '7';
+		Board[Cell.CenterBottom] = '8';
+		Board[Cell.RightBottom] = '9';
+		_firstMove = _firstMove == Player.Player1 ? Player.Player2_Or_AI : Player.Player1;
+		CurrentPlayer = _firstMove;
 	}
 
-
-	public bool MakeMove(in Cell position, out string status)
-	{
-		if (!_isStarted)
-		{
-			status = "Не начата игра.";
-			return false;
-		}
-
-		if (position == Cell.Wrong)
-		{
-			status = "Нужно вводить число от 1 до 9. Введите корректный номер клетки:";
-			return false;
-		}
-
-		if (_board[position] == 'X' || _board[position] == 'O')
-		{
-			status = "Это клетка уже занята. Введите корректный номер клетки:";
-			return false;
-		}
-
-		_board[position] = _playersSymbols[_currentPlayer];
-
-		if (CheckForWin())
-		{
-			_playersWins[_currentPlayer]++;
-			status = DrawBoard() +
-			         (_currentPlayer == Player.Player1 ? "Победил игрок 1\n\n" : "Победил игрок 2\n\n");
-			NextIteration();
-			status += DrawBoard() + (_currentPlayer == Player.Player1 ? "\nХод игрока 1:" : "\nХод игрока 2:");
-		}
-		else
-		{
-			if (CheckForDraw())
-			{
-				DrawsCount++;
-				status = DrawBoard() + "Ничья\n\n";
-				NextIteration();
-				status += DrawBoard() + (_currentPlayer == Player.Player1 ? "\nХод игрока 1:" : "\nХод игрока 2:");
-			}
-			else
-			{
-				status = DrawBoard();
-				NextPlayer();
-				status += _currentPlayer == Player.Player1 ? "\nХод игрока 1:" : "\nХод игрока 2:";
-			}
-		}
-
-		return true;
-	}
-
-	// Выводим текущее состояние игрового поля
-	private string DrawBoard()
-	{
-		return "-------------\n" +
-		       $"| {_board[Cell.LeftTop]} | {_board[Cell.CenterTop]} | {_board[Cell.RightTop]} |\n" +
-		       "-------------\n" +
-		       $"| {_board[Cell.LeftCenter]} | {_board[Cell.Center]} | {_board[Cell.RightCenter]} |\n" +
-		       "-------------\n" +
-		       $"| {_board[Cell.LeftBottom]} | {_board[Cell.CenterBottom]} | {_board[Cell.RightBottom]} |\n" +
-		       "-------------\n";
-	}
-
+	//смена игрока
 	private void NextPlayer()
 	{
-		_currentPlayer = _currentPlayer == Player.Player1 ? Player.Player2 : Player.Player1;
-		_move++;
+		CurrentPlayer = CurrentPlayer == Player.Player1 ? Player.Player2_Or_AI : Player.Player1;
 	}
 
-	// Проверяем на выигрыш
-	public string ComputerMove()
+	//ход игрока
+	public MoveResult MakeMove(in Cell position)
 	{
-		if (!_isStarted)
+		Board[position] = _playersSymbols[CurrentPlayer];
+		if (CheckForWin())
 		{
-			return "Не начата игра.";
+			_playersWinsCount[CurrentPlayer]++;
+			return MoveResult.Win;
 		}
+
+		if (!IsMovesLeft())
+		{
+			DrawsCount++;
+			return MoveResult.Draw;
+		}
+
+		NextPlayer();
+		return MoveResult.Success;
+	}
+
+
+	//ход бота
+	public MoveResult ComputerMove()
+	{
 		var bestVal = int.MinValue;
 		var bestPosition = Cell.Wrong;
 
 		for (var i = 0; i < 9; i++)
 		{
-			if (_board[(Cell)i] == _playersSymbols[Player.Player1] ||
-			    _board[(Cell)i] == _playersSymbols[Player.Player2]) continue;
-			_board[(Cell)i] = _playersSymbols[_currentPlayer];
+			if (Board[(Cell)i] == _playersSymbols[Player.Player1] ||
+			    Board[(Cell)i] == _playersSymbols[Player.Player2_Or_AI]) continue;
+			Board[(Cell)i] = _playersSymbols[CurrentPlayer];
 			var moveVal = Minimax(0, false);
-			_board[(Cell)i] = (char)(i + 49);
+			Board[(Cell)i] = (char)(i + 49);
 
 			if (moveVal <= bestVal) continue;
 			bestPosition = (Cell)i;
 			bestVal = moveVal;
 		}
 
-		MakeMove(bestPosition, out var output);
-		return output;
+		return MakeMove(bestPosition);
 	}
 
+	//алгоритм МИНИМАКС для робота
 	private int Minimax(int depth, bool isMax)
 	{
 		var score = Evaluate();
@@ -203,11 +165,11 @@ internal class TicTacToe
 			var best = int.MinValue;
 			for (var i = 0; i < 9; i++)
 			{
-				if (_board[(Cell)i] == _playersSymbols[Player.Player1] ||
-				    _board[(Cell)i] == _playersSymbols[Player.Player2]) continue;
-				_board[(Cell)i] = _playersSymbols[_currentPlayer];
+				if (Board[(Cell)i] == _playersSymbols[Player.Player1] ||
+				    Board[(Cell)i] == _playersSymbols[Player.Player2_Or_AI]) continue;
+				Board[(Cell)i] = _playersSymbols[CurrentPlayer];
 				best = Math.Max(best, Minimax(depth + 1, !isMax));
-				_board[(Cell)i] = (char)(i + 49);
+				Board[(Cell)i] = (char)(i + 49);
 			}
 
 			return best;
@@ -217,124 +179,121 @@ internal class TicTacToe
 			var best = int.MaxValue;
 			for (var i = 0; i < 9; i++)
 			{
-				if (_board[(Cell)i] == _playersSymbols[Player.Player1] ||
-				    _board[(Cell)i] == _playersSymbols[Player.Player2]) continue;
-				_board[(Cell)i] =
-					_playersSymbols[_currentPlayer == Player.Player1 ? Player.Player2 : Player.Player1];
+				if (Board[(Cell)i] == _playersSymbols[Player.Player1] ||
+				    Board[(Cell)i] == _playersSymbols[Player.Player2_Or_AI]) continue;
+				Board[(Cell)i] =
+					_playersSymbols[CurrentPlayer == Player.Player1 ? Player.Player2_Or_AI : Player.Player1];
 				best = Math.Min(best, Minimax(depth + 1, !isMax));
-				_board[(Cell)i] = (char)(i + 49);
+				Board[(Cell)i] = (char)(i + 49);
 			}
 
 			return best;
 		}
 	}
 
+	//полезность хода
 	private int Evaluate()
 	{
-		if (_board[Cell.LeftTop] == _board[Cell.CenterTop] && _board[Cell.CenterTop] == _board[Cell.RightTop])
+		if (Board[Cell.LeftTop] == Board[Cell.CenterTop] && Board[Cell.CenterTop] == Board[Cell.RightTop])
 		{
-			if (_board[Cell.LeftTop] == _playersSymbols[_currentPlayer])
+			if (Board[Cell.LeftTop] == _playersSymbols[CurrentPlayer])
 				return +10;
-			if (_board[Cell.LeftTop] ==
-			    _playersSymbols[_currentPlayer == Player.Player1 ? Player.Player2 : Player.Player1])
+			if (Board[Cell.LeftTop] ==
+			    _playersSymbols[CurrentPlayer == Player.Player1 ? Player.Player2_Or_AI : Player.Player1])
 				return -10;
 		}
 
-		if (_board[Cell.LeftCenter] == _board[Cell.Center] && _board[Cell.Center] == _board[Cell.RightCenter])
+		if (Board[Cell.LeftCenter] == Board[Cell.Center] && Board[Cell.Center] == Board[Cell.RightCenter])
 		{
-			if (_board[Cell.LeftCenter] == _playersSymbols[_currentPlayer])
+			if (Board[Cell.LeftCenter] == _playersSymbols[CurrentPlayer])
 				return +10;
-			if (_board[Cell.LeftCenter] ==
-			    _playersSymbols[_currentPlayer == Player.Player1 ? Player.Player2 : Player.Player1])
+			if (Board[Cell.LeftCenter] ==
+			    _playersSymbols[CurrentPlayer == Player.Player1 ? Player.Player2_Or_AI : Player.Player1])
 				return -10;
 		}
 
-		if (_board[Cell.LeftBottom] == _board[Cell.CenterBottom] &&
-		    _board[Cell.CenterBottom] == _board[Cell.RightBottom])
+		if (Board[Cell.LeftBottom] == Board[Cell.CenterBottom] &&
+		    Board[Cell.CenterBottom] == Board[Cell.RightBottom])
 		{
-			if (_board[Cell.LeftBottom] == _playersSymbols[_currentPlayer])
+			if (Board[Cell.LeftBottom] == _playersSymbols[CurrentPlayer])
 				return +10;
-			if (_board[Cell.LeftBottom] ==
-			    _playersSymbols[_currentPlayer == Player.Player1 ? Player.Player2 : Player.Player1])
+			if (Board[Cell.LeftBottom] ==
+			    _playersSymbols[CurrentPlayer == Player.Player1 ? Player.Player2_Or_AI : Player.Player1])
 				return -10;
 		}
 
-		if (_board[Cell.LeftTop] == _board[Cell.LeftCenter] && _board[Cell.LeftCenter] == _board[Cell.LeftBottom])
+		if (Board[Cell.LeftTop] == Board[Cell.LeftCenter] && Board[Cell.LeftCenter] == Board[Cell.LeftBottom])
 		{
-			if (_board[Cell.LeftTop] == _playersSymbols[_currentPlayer])
+			if (Board[Cell.LeftTop] == _playersSymbols[CurrentPlayer])
 				return +10;
-			if (_board[Cell.LeftTop] ==
-			    _playersSymbols[_currentPlayer == Player.Player1 ? Player.Player2 : Player.Player1])
+			if (Board[Cell.LeftTop] ==
+			    _playersSymbols[CurrentPlayer == Player.Player1 ? Player.Player2_Or_AI : Player.Player1])
 				return -10;
 		}
 
-		if (_board[Cell.CenterTop] == _board[Cell.Center] && _board[Cell.Center] == _board[Cell.CenterBottom])
+		if (Board[Cell.CenterTop] == Board[Cell.Center] && Board[Cell.Center] == Board[Cell.CenterBottom])
 		{
-			if (_board[Cell.CenterTop] == _playersSymbols[_currentPlayer])
+			if (Board[Cell.CenterTop] == _playersSymbols[CurrentPlayer])
 				return +10;
-			if (_board[Cell.CenterTop] ==
-			    _playersSymbols[_currentPlayer == Player.Player1 ? Player.Player2 : Player.Player1])
+			if (Board[Cell.CenterTop] ==
+			    _playersSymbols[CurrentPlayer == Player.Player1 ? Player.Player2_Or_AI : Player.Player1])
 				return -10;
 		}
 
-		if (_board[Cell.RightTop] == _board[Cell.RightCenter] &&
-		    _board[Cell.RightCenter] == _board[Cell.RightBottom])
+		if (Board[Cell.RightTop] == Board[Cell.RightCenter] &&
+		    Board[Cell.RightCenter] == Board[Cell.RightBottom])
 		{
-			if (_board[Cell.RightTop] == _playersSymbols[_currentPlayer])
+			if (Board[Cell.RightTop] == _playersSymbols[CurrentPlayer])
 				return +10;
-			if (_board[Cell.RightTop] ==
-			    _playersSymbols[_currentPlayer == Player.Player1 ? Player.Player2 : Player.Player1])
+			if (Board[Cell.RightTop] ==
+			    _playersSymbols[CurrentPlayer == Player.Player1 ? Player.Player2_Or_AI : Player.Player1])
 				return -10;
 		}
 
-		if (_board[Cell.LeftTop] == _board[Cell.Center] && _board[Cell.Center] == _board[Cell.RightBottom])
+		if (Board[Cell.LeftTop] == Board[Cell.Center] && Board[Cell.Center] == Board[Cell.RightBottom])
 		{
-			if (_board[Cell.LeftTop] == _playersSymbols[_currentPlayer])
+			if (Board[Cell.LeftTop] == _playersSymbols[CurrentPlayer])
 				return +10;
-			if (_board[Cell.LeftTop] ==
-			    _playersSymbols[_currentPlayer == Player.Player1 ? Player.Player2 : Player.Player1])
+			if (Board[Cell.LeftTop] ==
+			    _playersSymbols[CurrentPlayer == Player.Player1 ? Player.Player2_Or_AI : Player.Player1])
 				return -10;
 		}
 
-		if (_board[Cell.RightTop] == _board[Cell.Center] && _board[Cell.Center] == _board[Cell.LeftBottom])
+		if (Board[Cell.RightTop] == Board[Cell.Center] && Board[Cell.Center] == Board[Cell.LeftBottom])
 		{
-			if (_board[Cell.RightTop] == _playersSymbols[_currentPlayer])
+			if (Board[Cell.RightTop] == _playersSymbols[CurrentPlayer])
 				return +10;
-			if (_board[Cell.RightTop] ==
-			    _playersSymbols[_currentPlayer == Player.Player1 ? Player.Player2 : Player.Player1])
+			if (Board[Cell.RightTop] ==
+			    _playersSymbols[CurrentPlayer == Player.Player1 ? Player.Player2_Or_AI : Player.Player1])
 				return -10;
 		}
 
 		return 0;
 	}
 
+	//проверка на ничью
 	private bool IsMovesLeft()
 	{
-		return _board.Any(cell =>
-			cell.Value != _playersSymbols[Player.Player1] && cell.Value != _playersSymbols[Player.Player2]);
+		return Board.Any(cell =>
+			cell.Value != _playersSymbols[Player.Player1] && cell.Value != _playersSymbols[Player.Player2_Or_AI]);
 	}
 
+	//проверка на победу
 	private bool CheckForWin()
 	{
-		return (_board[Cell.LeftTop] == _board[Cell.CenterTop] &&
-		        _board[Cell.CenterTop] == _board[Cell.RightTop]) ||
-		       (_board[Cell.LeftCenter] == _board[Cell.Center] &&
-		        _board[Cell.Center] == _board[Cell.RightCenter]) ||
-		       (_board[Cell.LeftBottom] == _board[Cell.CenterBottom] &&
-		        _board[Cell.CenterBottom] == _board[Cell.RightBottom]) ||
-		       (_board[Cell.LeftTop] == _board[Cell.LeftCenter] &&
-		        _board[Cell.LeftCenter] == _board[Cell.LeftBottom]) ||
-		       (_board[Cell.CenterTop] == _board[Cell.Center] &&
-		        _board[Cell.Center] == _board[Cell.CenterBottom]) ||
-		       (_board[Cell.RightTop] == _board[Cell.RightCenter] &&
-		        _board[Cell.RightCenter] == _board[Cell.RightBottom]) ||
-		       (_board[Cell.LeftTop] == _board[Cell.Center] && _board[Cell.Center] == _board[Cell.RightBottom]) ||
-		       (_board[Cell.RightTop] == _board[Cell.Center] && _board[Cell.Center] == _board[Cell.LeftBottom]);
-	}
-
-	// Проверяем на ничью
-	private bool CheckForDraw()
-	{
-		return _move == 8;
+		return (Board[Cell.LeftTop] == Board[Cell.CenterTop] &&
+		        Board[Cell.CenterTop] == Board[Cell.RightTop]) ||
+		       (Board[Cell.LeftCenter] == Board[Cell.Center] &&
+		        Board[Cell.Center] == Board[Cell.RightCenter]) ||
+		       (Board[Cell.LeftBottom] == Board[Cell.CenterBottom] &&
+		        Board[Cell.CenterBottom] == Board[Cell.RightBottom]) ||
+		       (Board[Cell.LeftTop] == Board[Cell.LeftCenter] &&
+		        Board[Cell.LeftCenter] == Board[Cell.LeftBottom]) ||
+		       (Board[Cell.CenterTop] == Board[Cell.Center] &&
+		        Board[Cell.Center] == Board[Cell.CenterBottom]) ||
+		       (Board[Cell.RightTop] == Board[Cell.RightCenter] &&
+		        Board[Cell.RightCenter] == Board[Cell.RightBottom]) ||
+		       (Board[Cell.LeftTop] == Board[Cell.Center] && Board[Cell.Center] == Board[Cell.RightBottom]) ||
+		       (Board[Cell.RightTop] == Board[Cell.Center] && Board[Cell.Center] == Board[Cell.LeftBottom]);
 	}
 }

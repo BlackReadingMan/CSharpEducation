@@ -3,5 +3,5 @@
 internal enum Player
 {
 	Player1,
-	Player2
+	Player2_Or_AI
 }
