@@ -1,7 +1,9 @@
 ﻿namespace Task2.CustomDataTypes;
 
-internal enum Player
+internal abstract class Player(string name, char symbol)
 {
-	Player1,
-	Player2_Or_AI
+	public string Name { get; set; } = name;
+	public char Symbol { get; set; } = symbol;
+
+	public abstract Cell GetPlayerMove();
 }
