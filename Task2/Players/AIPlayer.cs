@@ -18,6 +18,7 @@ internal sealed class AiPlayer(string name, char symbol, Board board) : Player(n
   private char _anotherSymbol;
 
   #region Методы
+
   /// <summary>
   /// Расчитывает идеальной ход ИИ.
   /// </summary>
@@ -28,23 +29,30 @@ internal sealed class AiPlayer(string name, char symbol, Board board) : Player(n
     this._anotherSymbol = this.FindAnotherSymbol();
     var bestVal = int.MinValue;
     var bestPosition = Cell.Wrong;
-
-    for (var i = 0; i < 9; i++)
+    if (IsFirstStep())
     {
-      if (board[(Cell)i] == this.Symbol ||
-          board[(Cell)i] == this._anotherSymbol) continue;
-      board[(Cell)i] = this.Symbol;
-      var moveVal = this.Minimax(0, false);
-      board[(Cell)i] = ' ';
+      bestPosition = Cell.Center;
+    }
+    else
+    {
+      for (var i = 0; i < 9; i++)
+      {
+        if (board[(Cell)i] == this.Symbol ||
+            board[(Cell)i] == this._anotherSymbol) continue;
+        board[(Cell)i] = this.Symbol;
+        var moveVal = this.Minimax(0, false);
+        board[(Cell)i] = ' ';
 
-      if (moveVal <= bestVal) continue;
-      bestPosition = (Cell)i;
-      bestVal = moveVal;
+        if (moveVal <= bestVal) continue;
+        bestPosition = (Cell)i;
+        bestVal = moveVal;
+      }
     }
 
     Console.WriteLine($"{(int)(bestPosition + 1)}");
     return bestPosition;
   }
+
   /// <summary>
   /// Алгоритм МИНИМАКС.
   /// </summary>
@@ -160,6 +168,20 @@ internal sealed class AiPlayer(string name, char symbol, Board board) : Player(n
     }
 
     return 0;
+  }
+  /// <summary>
+  /// Проверяет первый ли это ход.
+  /// </summary>
+  /// <returns>Возвращает <see langword="true"/> если первый, <see langword="false"/> если нет.</returns>
+  private bool IsFirstStep()
+  {
+    for (var i = 0; i < 9; i++)
+    {
+      if (board[(Cell)i] != Board.EmptySymbol)
+        return false;
+    }
+
+    return true;
   }
   /// <summary>
   /// Ищет на игровой доске символ другого игрока.
