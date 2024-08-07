@@ -15,7 +15,7 @@ internal sealed class AiPlayer(string name, char symbol, Board board) : Player(n
   /// <summary>
   /// Символ другого игрока.
   /// </summary>
-  private char _anotherSymbol;
+  private Player _anotherPlayrt;
 
   #region Методы
 
@@ -26,7 +26,7 @@ internal sealed class AiPlayer(string name, char symbol, Board board) : Player(n
   public override Cell GetPlayerMove()
   {
     Console.WriteLine($"Ходит робот {this.Name}:");
-    this._anotherSymbol = this.FindAnotherSymbol();
+    this._anotherPlayrt = this.FindAnotherPlayer();
     var bestVal = int.MinValue;
     var bestPosition = Cell.Wrong;
     if (IsFirstStep())
@@ -37,11 +37,11 @@ internal sealed class AiPlayer(string name, char symbol, Board board) : Player(n
     {
       for (var i = 0; i < 9; i++)
       {
-        if (board[(Cell)i] == this.Symbol ||
-            board[(Cell)i] == this._anotherSymbol) continue;
-        board[(Cell)i] = this.Symbol;
+        if (board[(Cell)i] == this ||
+            board[(Cell)i] == this._anotherPlayrt) continue;
+        board[(Cell)i] = this;
         var moveVal = this.Minimax(0, false);
-        board[(Cell)i] = ' ';
+        board[(Cell)i] = null;
 
         if (moveVal <= bestVal) continue;
         bestPosition = (Cell)i;
@@ -75,11 +75,11 @@ internal sealed class AiPlayer(string name, char symbol, Board board) : Player(n
       var best = int.MinValue;
       for (var i = 0; i < 9; i++)
       {
-        if (board[(Cell)i] == this.Symbol ||
-            board[(Cell)i] == this._anotherSymbol) continue;
-        board[(Cell)i] = this.Symbol;
+        if (board[(Cell)i] == this ||
+            board[(Cell)i] == this._anotherPlayrt) continue;
+        board[(Cell)i] = this;
         best = Math.Max(best, this.Minimax(depth + 1, !isMax));
-        board[(Cell)i] = ' ';
+        board[(Cell)i] = null;
       }
 
       return best;
@@ -89,11 +89,11 @@ internal sealed class AiPlayer(string name, char symbol, Board board) : Player(n
       var best = int.MaxValue;
       for (var i = 0; i < 9; i++)
       {
-        if (board[(Cell)i] == this.Symbol ||
-            board[(Cell)i] == this._anotherSymbol) continue;
-        board[(Cell)i] = this._anotherSymbol;
+        if (board[(Cell)i] == this ||
+            board[(Cell)i] == this._anotherPlayrt) continue;
+        board[(Cell)i] = this._anotherPlayrt;
         best = Math.Min(best, this.Minimax(depth + 1, !isMax));
-        board[(Cell)i] = ' ';
+        board[(Cell)i] = null;
       }
 
       return best;
@@ -104,71 +104,72 @@ internal sealed class AiPlayer(string name, char symbol, Board board) : Player(n
   {
     if (board[Cell.LeftTop] == board[Cell.CenterTop] && board[Cell.CenterTop] == board[Cell.RightTop])
     {
-      if (board[Cell.LeftTop] == this.Symbol)
+      if (board[Cell.LeftTop] == this)
         return +10;
-      if (board[Cell.LeftTop] == this._anotherSymbol)
+      if (board[Cell.LeftTop] == this._anotherPlayrt)
         return -10;
     }
 
     if (board[Cell.LeftCenter] == board[Cell.Center] && board[Cell.Center] == board[Cell.RightCenter])
     {
-      if (board[Cell.LeftCenter] == this.Symbol)
+      if (board[Cell.LeftCenter] == this)
         return +10;
-      if (board[Cell.LeftCenter] == this._anotherSymbol)
+      if (board[Cell.LeftCenter] == this._anotherPlayrt)
         return -10;
     }
 
     if (board[Cell.LeftBottom] == board[Cell.CenterBottom] &&
         board[Cell.CenterBottom] == board[Cell.RightBottom])
     {
-      if (board[Cell.LeftBottom] == this.Symbol)
+      if (board[Cell.LeftBottom] == this)
         return +10;
-      if (board[Cell.LeftBottom] == this._anotherSymbol)
+      if (board[Cell.LeftBottom] == this._anotherPlayrt)
         return -10;
     }
 
     if (board[Cell.LeftTop] == board[Cell.LeftCenter] && board[Cell.LeftCenter] == board[Cell.LeftBottom])
     {
-      if (board[Cell.LeftTop] == this.Symbol)
+      if (board[Cell.LeftTop] == this)
         return +10;
-      if (board[Cell.LeftTop] == this._anotherSymbol)
+      if (board[Cell.LeftTop] == this._anotherPlayrt)
         return -10;
     }
 
     if (board[Cell.CenterTop] == board[Cell.Center] && board[Cell.Center] == board[Cell.CenterBottom])
     {
-      if (board[Cell.CenterTop] == this.Symbol)
+      if (board[Cell.CenterTop] == this)
         return +10;
-      if (board[Cell.CenterTop] == this._anotherSymbol)
+      if (board[Cell.CenterTop] == this._anotherPlayrt)
         return -10;
     }
 
     if (board[Cell.RightTop] == board[Cell.RightCenter] && board[Cell.RightCenter] == board[Cell.RightBottom])
     {
-      if (board[Cell.RightTop] == this.Symbol)
+      if (board[Cell.RightTop] == this)
         return +10;
-      if (board[Cell.RightTop] == this._anotherSymbol)
+      if (board[Cell.RightTop] == this._anotherPlayrt)
         return -10;
     }
 
     if (board[Cell.LeftTop] == board[Cell.Center] && board[Cell.Center] == board[Cell.RightBottom])
     {
-      if (board[Cell.LeftTop] == this.Symbol)
+      if (board[Cell.LeftTop] == this)
         return +10;
-      if (board[Cell.LeftTop] == this._anotherSymbol)
+      if (board[Cell.LeftTop] == this._anotherPlayrt)
         return -10;
     }
 
     if (board[Cell.RightTop] == board[Cell.Center] && board[Cell.Center] == board[Cell.LeftBottom])
     {
-      if (board[Cell.RightTop] == this.Symbol)
+      if (board[Cell.RightTop] == this)
         return +10;
-      if (board[Cell.RightTop] == this._anotherSymbol)
+      if (board[Cell.RightTop] == this._anotherPlayrt)
         return -10;
     }
 
     return 0;
   }
+
   /// <summary>
   /// Проверяет первый ли это ход.
   /// </summary>
@@ -177,25 +178,27 @@ internal sealed class AiPlayer(string name, char symbol, Board board) : Player(n
   {
     for (var i = 0; i < 9; i++)
     {
-      if (board[(Cell)i] != Board.EmptySymbol)
+      if (board[(Cell)i] is not null)
         return false;
     }
 
     return true;
   }
+
   /// <summary>
   /// Ищет на игровой доске символ другого игрока.
   /// </summary>
   /// <returns>Возвращает найденный <see cref="char"/> символ другого игрока.</returns>
-  private char FindAnotherSymbol()
+  private Player FindAnotherPlayer()
   {
     for (var i = 0; i < 9; i++)
     {
-      if (board[(Cell)i] == this.Symbol || board[(Cell)i] == Board.EmptySymbol) continue;
+      if (board[(Cell)i] == this || board[(Cell)i] is null) continue;
       return board[(Cell)i];
     }
 
-    return (char)(this.Symbol + 1);
+    return new RealPayer("11", '1');
   }
+
   #endregion
 }

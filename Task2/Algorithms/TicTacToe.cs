@@ -153,10 +153,10 @@ internal sealed class TicTacToe
   /// <returns>Возвращает <see cref="MoveResult"/>.</returns>
   public MoveResult MakeMove(in Cell position)
   {
-    if (this._board[position] != Board.EmptySymbol)
+    if (this._board[position] is not null)
       return MoveResult.Failure;
 
-    this._board[position] = this.CurrentPlayer.Symbol;
+    this._board[position] = this.CurrentPlayer;
 
     if (this._board.IsWin())
     {
@@ -212,7 +212,7 @@ internal sealed class TicTacToe
   /// <returns><see cref="char"/> с порядковым номером клетки если она пустая или с символом игрока если нет.</returns>
   private char WhatWrite(Cell cell)
   {
-    return this._board[cell] == ' ' ? (char)(cell + 49) : this._board[cell];
+    return this._board[cell] is null ? (char)(cell + 49) : this._board[cell].Symbol;
   }
 
   #endregion
